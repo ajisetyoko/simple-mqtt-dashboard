@@ -1,23 +1,44 @@
 import paho.mqtt.client as paho
 import time
 import random
-broker="localhost"
-port=1883
+
+from itsdangerous import base64_encode
+import json
+
+broker = "localhost"
+port = 1883
+
+module_name = "A3p1"
+sensor_type = "temperature"
+sensor_id = "1001054"
+module_uuid = "A100G18766A"
+
+topic = f"{module_name}/{sensor_type}"
 
 
-def on_publish(client,userdata,result):
+def on_publish(client, userdata, result):
     print("Device 1 : Data published.")
+    print(result)
     pass
 
-client= paho.Client()
-client.on_publish = on_publish
-client.connect(broker,port)
 
-for i in range(20):
-    d=random.randint(1,5)
-    #telemetry to send 
-    message="Device 1 : Data " + str(i)
-    time.sleep(d)
-    #publish message
-    ret= client.publish("/data",message)
+def on_connect(client, userdata, flags, rc):
+    print("Connected with result code " + str(rc))
+
+
+client = paho.Client(transport="websockets")
+client.connect(broker, port)
+client.on_publish = on_publish
+
+while True:
+    time.sleep(1)  # frequency about 1Hz
+    data = {
+        "value": random.randint(23, 31),
+        "sensor_id": sensor_id,
+        "module_uuid": module_uuid,
+    }
+    data_enc = base64_encode(json.dumps(data))
+
+    ret = client.publish(topic, data_enc)
+
 print("Stopped...")
