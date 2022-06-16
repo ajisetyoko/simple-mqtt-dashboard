@@ -1,3 +1,4 @@
+from email import message
 import paho.mqtt.client as mqtt
 from itsdangerous import base64_decode
 
@@ -17,6 +18,7 @@ def on_connect(mqttc, obj, flags, rc):
 
 
 def on_message(mqttc, obj, msg):
+    print(msg.payload)
     print(msg.topic + " " + str(msg.qos) + " " + base64_decode(msg.payload).decode())
 
 
